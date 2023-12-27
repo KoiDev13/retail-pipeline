@@ -53,7 +53,7 @@ def retail():
     # Avoid dependencies conflicts
     def check_load(scan_name='check_load', checks_subpath='sources'):
         """Check the validity of a dataset."""
-        from soda.check_function import check
+        from include.soda.check_function import check
         return check(scan_name, checks_subpath)
     
     check_load()
