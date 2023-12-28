@@ -1,4 +1,3 @@
-
 -- Create a CTE to extract date and time components
 WITH datetime_cte AS (  
   SELECT DISTINCT
