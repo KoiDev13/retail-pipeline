@@ -9,6 +9,13 @@ from astro.files import File
 from astro.sql.table import Table, Metadata
 from astro.constants import FileType
 
+from dbt.cosmos_config import DBT_CONFIG, DBT_PROJECT_CONFIG
+from cosmos.airflow.task_group import DbtTaskGroup
+from cosmos.constants import LoadMode
+from cosmos.config import ProjectConfig, RenderConfig
+
+from airflow.models.baseoperator import chain
+
 @dag(
     start_date=datetime(2023, 1, 1),
     schedule=None,
@@ -52,11 +59,61 @@ def retail():
     # Isolated task
     # Avoid dependencies conflicts
     def check_load(scan_name='check_load', checks_subpath='sources'):
-        """Check the validity of a dataset."""
+        """Check the validity of loading task."""
         from include.soda.check_function import check
+        
+        return check(scan_name, checks_subpath)
+
+    transform = DbtTaskGroup(
+        group_id='transform',
+        project_config=DBT_PROJECT_CONFIG,
+        profile_config=DBT_CONFIG,
+        render_config=RenderConfig(
+            load_method=LoadMode.DBT_LS,
+            select=['path:models/transform']
+        ),
+        operator_args={
+                "install_deps": True
+            }
+    )
+
+    @task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+    def check_transform(scan_name='check_transform', checks_subpath='transform'):
+        """Check the validity of transforming dataset."""
+        from include.soda.check_function import check
+
         return check(scan_name, checks_subpath)
     
-    check_load()
 
+    report = DbtTaskGroup(
+        group_id='report',
+        project_config=DBT_PROJECT_CONFIG,
+        profile_config=DBT_CONFIG,
+        render_config=RenderConfig(
+            load_method=LoadMode.DBT_LS,
+            select=['path:models/report']
+        ),
+        operator_args={
+                "install_deps": True
+            }
+    )
+
+    @task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+    def check_report(scan_name='check_report', checks_subpath='report'):
+        """Check the validity of transforming dataset."""
+        from include.soda.check_function import check
+
+        return check(scan_name, checks_subpath)
+
+    chain(
+        upload_csv_to_gcs,
+        create_retail_dataset,
+        gcs_to_raw,
+        check_load(),
+        transform,
+        check_transform(),
+        report,
+        check_report(),
+    )
 
 retail()
