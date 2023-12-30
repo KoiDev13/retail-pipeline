@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 
 # Hide GCP service account key
-*.json
+./include/gcp/service_account.json
