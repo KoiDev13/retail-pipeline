@@ -2,7 +2,7 @@
 
 This project is a data pipeline for retail data. It includes ETL processes, data analysis, and reporting features.
 
-![Dash board](./images/koi-retail-dashboard.png)
+![Architect](./images/retail-pipeline.drawio.png)
 
 ## Tech stacks  
 
@@ -11,10 +11,6 @@ This project is a data pipeline for retail data. It includes ETL processes, data
 - [Soda](https://www.soda.io/)
 - [GCP account](https://cloud.google.com/?hl=en)
 - [DBT](https://docs.getdbt.com/docs/introduction)
-
-## Architect  
-
-![Architect](./images/retail-pipeline.drawio.png)
 
 ## Data source  
 
@@ -45,6 +41,9 @@ Airflow run
 
 Bigquery DWH
 ![Bigquery](./images/report-prod-invoices.png)
+
+Metabase Dashboard
+![Dash board](./images/koi-retail-dashboard.png)
 
 ## License  
 
